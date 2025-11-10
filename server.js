@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 const corsOptions = {
   origin: [
     'http://localhost:8080',
-    'https://YOUR_USERNAME.github.io'  // Replace with your GitHub Pages URL
+    'https://github.com/shiivampatell12/after-school-backend.git'  // Replace with your GitHub Pages URL
   ],
   credentials: true,
   optionsSuccessStatus: 200
