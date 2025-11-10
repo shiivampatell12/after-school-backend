@@ -30,40 +30,36 @@ let db;
 let client;
 
 async function connectToMongoDB() {
-    try {
-        console.log('Attempting to connect to MongoDB...');
-        console.log('MongoDB URI check:', process.env.MONGODB_URI ? 'Set' : 'Missing');
-        
-        // Add Node.js TLS options to bypass SSL issues on Render
-        const options = {
-            tls: true,
-            serverSelectionTimeoutMS: 30000,
-            family: 4 // Use IPv4, skip trying IPv6
-        };
-        
-        client = new MongoClient(process.env.MONGODB_URI, options);
-        await client.connect();
-        
-        console.log('✅ Connected to MongoDB Atlas successfully!');
-        db = client.db('afterschooldb');
-        
-        // Test database connection
-        await db.admin().ping();
-        console.log('✅ Database ping successful');
-        
-        // Seed data if collection is empty
-        const count = await db.collection('lessons').countDocuments();
-        console.log(`Found ${count} existing lessons`);
-        
-        if (count === 0) {
-            console.log('Seeding initial data...');
-            await seedInitialData();
-        }
-        
-    } catch (error) {
-        console.error('❌ MongoDB connection failed:', error.message);
-        console.log('Will continue without database - API will return 503 errors');
+  try {
+    console.log('Attempting to connect to MongoDB...');
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI is missing');
     }
+
+    const clientOptions = {
+      // SRV implies TLS; no need for tls:true or ssl:true
+      serverSelectionTimeoutMS: 30000,
+      family: 4, // Prefer IPv4 on Render
+      serverApi: { version: '1', strict: true, deprecationErrors: true },
+    };
+
+    client = new MongoClient(process.env.MONGODB_URI, clientOptions);
+    await client.connect();
+
+    console.log('✅ Connected to MongoDB Atlas successfully!');
+    db = client.db('afterschooldb');
+
+    await db.admin().ping();
+    console.log('✅ Database ping successful');
+
+    const count = await db.collection('lessons').countDocuments();
+    console.log(`Found ${count} existing lessons`);
+    if (count === 0) await seedInitialData();
+  } catch (err) {
+    console.error('❌ MongoDB connection failed:', err?.message || err);
+    console.error(err?.stack);
+    console.log('Will continue without database - API will return 503 errors');
+  }
 }
 
 // Seed initial data
