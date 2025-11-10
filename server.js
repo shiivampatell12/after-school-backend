@@ -34,11 +34,22 @@ async function connectToMongoDB() {
         console.log('Attempting to connect to MongoDB...');
         console.log('MongoDB URI check:', process.env.MONGODB_URI ? 'Set' : 'Missing');
         
-        client = new MongoClient(process.env.MONGODB_URI);
+        // Add Node.js TLS options to bypass SSL issues on Render
+        const options = {
+            tls: true,
+            serverSelectionTimeoutMS: 30000,
+            family: 4 // Use IPv4, skip trying IPv6
+        };
+        
+        client = new MongoClient(process.env.MONGODB_URI, options);
         await client.connect();
         
         console.log('✅ Connected to MongoDB Atlas successfully!');
         db = client.db('afterschooldb');
+        
+        // Test database connection
+        await db.admin().ping();
+        console.log('✅ Database ping successful');
         
         // Seed data if collection is empty
         const count = await db.collection('lessons').countDocuments();
@@ -51,7 +62,7 @@ async function connectToMongoDB() {
         
     } catch (error) {
         console.error('❌ MongoDB connection failed:', error.message);
-        // Don't retry to avoid infinite loops
+        console.log('Will continue without database - API will return 503 errors');
     }
 }
 
