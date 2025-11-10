@@ -34,9 +34,8 @@ async function connectToMongoDB() {
         console.log('Attempting to connect to MongoDB...');
         console.log('Connection URI:', process.env.MONGODB_URI ? 'URI is set' : 'URI is missing');
         
+        // Remove deprecated options
         const mongoOptions = {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
             serverSelectionTimeoutMS: 30000,
             connectTimeoutMS: 30000,
             socketTimeoutMS: 30000,
