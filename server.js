@@ -10,10 +10,10 @@ const PORT = process.env.PORT || 3000;
 const corsOptions = {
   origin: [
     'http://localhost:8080',
-    'https://shiivampatell12.github.io/after-school-frontend/'  // Update with your GitHub Pages URL
+    'https://shiivampatell12.github.io', // ← no trailing slash, no path
   ],
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
