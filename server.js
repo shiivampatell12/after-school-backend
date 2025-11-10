@@ -34,11 +34,14 @@ async function connectToMongoDB() {
         console.log('Attempting to connect to MongoDB...');
         console.log('Connection URI:', process.env.MONGODB_URI ? 'URI is set' : 'URI is missing');
         
-        // Remove deprecated options
+        // MongoDB options with SSL configuration for Render
         const mongoOptions = {
             serverSelectionTimeoutMS: 30000,
             connectTimeoutMS: 30000,
             socketTimeoutMS: 30000,
+            tls: true,
+            tlsAllowInvalidCertificates: true,
+            tlsInsecure: true
         };
 
         client = new MongoClient(process.env.MONGODB_URI, mongoOptions);
@@ -60,6 +63,12 @@ async function connectToMongoDB() {
     } catch (error) {
         console.error('❌ MongoDB connection error:', error.message);
         console.error('Full error:', error);
+        
+        // Retry connection after 5 seconds
+        setTimeout(() => {
+            console.log('Retrying MongoDB connection...');
+            connectToMongoDB();
+        }, 5000);
     }
 }
 
