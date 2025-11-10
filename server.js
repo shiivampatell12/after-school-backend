@@ -32,43 +32,26 @@ let client;
 async function connectToMongoDB() {
     try {
         console.log('Attempting to connect to MongoDB...');
-        console.log('Connection URI:', process.env.MONGODB_URI ? 'URI is set' : 'URI is missing');
+        console.log('MongoDB URI check:', process.env.MONGODB_URI ? 'Set' : 'Missing');
         
-        // Simple MongoDB options - remove conflicting TLS options
-        const mongoOptions = {
-            serverSelectionTimeoutMS: 30000,
-            connectTimeoutMS: 30000,
-            socketTimeoutMS: 30000
-        };
-
-        client = new MongoClient(process.env.MONGODB_URI, mongoOptions);
+        client = new MongoClient(process.env.MONGODB_URI);
         await client.connect();
         
-        // Test the connection
-        await client.db("admin").command({ ping: 1 });
         console.log('✅ Connected to MongoDB Atlas successfully!');
-        
         db = client.db('afterschooldb');
         
         // Seed data if collection is empty
         const count = await db.collection('lessons').countDocuments();
+        console.log(`Found ${count} existing lessons`);
+        
         if (count === 0) {
             console.log('Seeding initial data...');
             await seedInitialData();
         }
         
     } catch (error) {
-        console.error('❌ MongoDB connection error:', error.message);
-        console.error('Full error:', error);
-        
-        // Retry connection after 10 seconds (only once)
-        if (!error.retryAttempted) {
-            error.retryAttempted = true;
-            setTimeout(() => {
-                console.log('Retrying MongoDB connection...');
-                connectToMongoDB();
-            }, 10000);
-        }
+        console.error('❌ MongoDB connection failed:', error.message);
+        // Don't retry to avoid infinite loops
     }
 }
 
