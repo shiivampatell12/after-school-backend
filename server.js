@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 const corsOptions = {
   origin: [
     'http://localhost:8080',
-    'https://github.com/shiivampatell12/after-school-backend.git'  // Replace with your GitHub Pages URL
+    'https://github.com/shiivampatell12/after-school-backend.git'
   ],
   credentials: true,
   optionsSuccessStatus: 200
@@ -28,9 +28,15 @@ app.use((req, res, next) => {
 // Static files middleware for lesson images
 app.use('/images', express.static('public/images'));
 
-// MongoDB connection
-let db;
-MongoClient.connect(process.env.MONGODB_URI)
+const mongoOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  ssl: true,
+  tlsAllowInvalidCertificates: true,
+  serverSelectionTimeoutMS: 5000
+};
+
+MongoClient.connect(process.env.MONGODB_URI, mongoOptions)
     .then(client => {
         console.log('Connected to MongoDB Atlas');
         db = client.db('afterschooldb');
